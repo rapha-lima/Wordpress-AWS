@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require 'yaml'
+
+settings = YAML::load_file(File.join(__dir__, 'vagrant-local-settings.yml'))
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'aws'
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "dummy"
+
+  config.vm.provider :aws do |provider, override|
+    provider.access_key_id = ENV['AWS_ACCESS_KEY']
+    provider.secret_access_key = ENV['AWS_SECRET_KEY']
+    provider.ami = settings['aws.ami']
+    provider.region = settings['aws.region']
+    provider.instance_type = settings['aws.instance_type']
+    provider.keypair_name = settings['aws.keypair_name']
+    override.ssh.private_key_path = settings['general.private_key_path']
+    override.ssh.username = settings['aws.ssh_username']
+  end
+
+  config.vm.define "master" do |master|
+    master.vm.hostname = "master"
+    master.vm.provider :aws do |provider, override|
+      provider.tags = { 'Name' => 'master-' + settings['aws.yourname'], }
+    end
+  end
+end

@@ -1,0 +1,7 @@
+general.private_key_path: 'master.pem'
+aws.ami: 'ami-bf9520a2'
+aws.region: 'sa-east-1'
+aws.instance_type: 't2.micro'
+aws.ssh_username: 'centos'
+aws.keypair_name: 'master'
+aws.yourname: 'Raphinha'
