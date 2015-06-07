@@ -1,7 +1,7 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Resources": {
-        "RoleInstance": {
+        "RootRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
                 "AssumeRolePolicyDocument": {
@@ -20,25 +20,38 @@
                         }
                     ]
                 },
-                "Policies": {
-                    "PolicyName": "wordpress",
-                    "PolicyDocument": {
-                        "Version": "2012-10-17",
-                        "Statement": [
-                            {
-                                "Sid": "Stmt1433702475000",
-                                "Effect": "Allow",
-                                "Action": [
-                                    "rds:DescribeDBInstances"
-                                ],
-                                "Resource": [
-                                    "*"
-                                ]
-                            }
-                        ]
+                "Policies": [
+                    {
+                        "PolicyName": "wordpress",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "Stmt1433702475000",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "rds:DescribeDBInstances"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
                     }
-                },
+                ],
                 "Path": "/"
+            }
+        },
+        "RootInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "RootRole"
+                    }
+                ]
             }
         },
         "VPC": {
@@ -305,6 +318,7 @@
                 "DBInstanceIdentifier": "DB-WordPress",
                 "AllocatedStorage": "5",
                 "DBInstanceClass": "db.t1.micro",
+                "StorageType" : "gp2",
                 "VPCSecurityGroups": [
                     {
                         "Ref": "RDSSecurityGroup"
@@ -329,7 +343,7 @@
                 "InstanceType": "t2.micro",
                 "KeyName": "wordpress",
                 "IamInstanceProfile": {
-                    "Ref": "RoleInstance"
+                    "Ref": "RootInstanceProfile"
                 },
                 "NetworkInterfaces": [
                     {
