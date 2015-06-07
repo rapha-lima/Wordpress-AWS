@@ -19,13 +19,13 @@
 define('DB_NAME', 'wordpress');
 
 /** MySQL database username */
-define('DB_USER', '{{ rds_user }}');
+define('DB_USER', '{{ pillar['rds_user'] }}');
 
 /** MySQL database password */
-define('DB_PASSWORD', '{{ rds_passwd }}');
+define('DB_PASSWORD', '{{ pillar['rds_passwd'] }}');
 
 /** MySQL hostname */
-define('DB_HOST', '{{ rds_endpoint }}');
+define('DB_HOST', '{{ pillar['rds_endpoint'] }}');
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8');
