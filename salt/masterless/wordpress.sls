@@ -14,28 +14,31 @@ install_pkgs:
 create-database:
   cmd.run:
     - name: mysql -h {{ pillar['rds_endpoint'] }} -u {{ pillar['rds_user'] }} -p{{ pillar['rds_passwd'] }} -e "CREATE DATABASE wordpress"
-
-download-wordpress:
-  cmd.run:
-    - name: wget http://wordpress.org/latest.tar.gz
-
-extract-wordpress:
-  cmd.run:
-    - name: tar xzf latest.tar.gz
     - require:
-      - cmd: download-wordpress
+      - pkg: install_pkgs
 
-cp-wordpress-content:
+copy-dumpbase:
+  file.managed:
+    - name: /tmp/wordpress.sql
+    - source: salt://masterless/files/wordpress.sql
+    - require:
+      - cmd: create-database
+
+import-dump:
   cmd.run:
-    - name: rsync -a wordpress/ /var/www/html/
+    - name: mysql -h {{ pillar['rds_endpoint'] }} -u {{ pillar['rds_user'] }} -p{{ pillar['rds_passwd'] }} wordpress < /tmp/wordpress.sql
     - require:
-      - cmd: extract-wordpress
+      - file: copy-dumpbase
 
-/var/www/html/wp-content/uploads:
-  file.directory:
-    - makedirs: True
+copy-wordpress-app:
+  archive.extracted:
+    - name: /var/www/html/
+    - source: salt://masterless/files/wordpress.tar.gz
+    - source_hash: md5=15e30b829854ad21e5436836ab00ef00
+    - archive_format: tar
+    - if_missing: /tmp/data
     - require:
-      - cmd: cp-wordpress-content
+      - pkg: install_pkgs
 
 grant-html-permissions:
   file.directory:
@@ -47,7 +50,7 @@ grant-html-permissions:
       - user
       - group
     - require:
-      - cmd: cp-wordpress-content
+      - archive: copy-wordpress-app
 
 create-wp-config:
   file.managed:
@@ -57,7 +60,7 @@ create-wp-config:
     - user: apache
     - group: apache
     - require:
-      - cmd: cp-wordpress-content
+      - archive: copy-wordpress-app
 
 httpd:
   service.running:
