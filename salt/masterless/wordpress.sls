@@ -12,7 +12,7 @@ install_pkgs:
 
 create-database:
   cmd.run:
-    - name: mysql -h {{ rds_endpoint }} -u {{ rds_user }} -p{{ rds_passwd }} -e "CREATE DATABASE {{ wordpress }}"
+    - name: mysql -h {{ pillar['rds_endpoint'] }} -u {{ pillar['rds_user'] }} -p{{ pillar['rds_passwd'] }} -e "CREATE DATABASE wordpress"
 
 download-wordpress:
   cmd.run:

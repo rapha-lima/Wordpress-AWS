@@ -5,12 +5,23 @@ type git || yum install -y git
 git clone https://github.com/rapha-lima/DevOps.git /opt/DevOps
 
 type salt-call || curl -sSL https://bootstrap.saltstack.com | sh
+type wget || yum install wget -y
+type unzip || yum install unzip -y
+
+if ! type aws >> /dev/null ; then
+  echo "There is no AWS Cli packaged installed. Let's install it."
+  wget --quiet https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -O /tmp/awscli-bundle.zip && unzip -qo /tmp/awscli-bundle.zip -d /tmp/ && /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/bin/aws
+fi
+
+for i in /srv/salt /srv/pillar; do
+  [[ -d $i ]] || mkdir -p $i
+done
 
 mountpoint -q /srv/salt || mount -B /opt/DevOps/salt /srv/salt
 mountpoint -q /srv/pillar || mount -B /opt/DevOps/pillar /srv/pillar
 
-rds_endpoint=$(aws rds describe-db-instances --db-instance-identifier DB-WordPress | grep "Address" | cut -d '"' -f 4)
+rds_endpoint=$(aws rds describe-db-instances --db-instance-identifier DB-WordPress --region sa-east-1 | grep "Address" | cut -d '"' -f 4)
 
-sed -i "s/rds_endpoint:/rds_endpoint: $rds_endpoint" /srv/pillar/worpress_rds.sls
+sed -i "s/rds_endpoint:/rds_endpoint: $rds_endpoint/" /srv/pillar/wordpress_rds.sls
 
 salt-call --local state.sls masterless.wordpress
