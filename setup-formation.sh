@@ -6,13 +6,6 @@ read -p "Insert Secret Key: " AWS_SECRET_KEY
 export AWS_ACCESS_KEY
 export AWS_SECRET_KEY
 
-if ! type vagrant >> /dev/null ; then
-  yum install https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.rpm -y
-fi
-
-vagrant plugin install vagrant-aws
-vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
-
 yum install wget unzip -y
 
 if ! type aws >> /dev/null ; then
@@ -24,4 +17,4 @@ aws ec2 create-key-pair --key-name master --region sa-east-1 --query 'KeyMateria
 
 chmod 400 master.pem
 
-vagrant up
+aws cloudformation create-stack --stack-name Infra-base --template-body file://aws//templates//Infra-Base.json --region sa-east-1

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+type git || yum install -y git
+
+git clone https://github.com/rapha-lima/DevOps.git /opt/DevOps
+
+type salt-call || curl -sSL https://bootstrap.saltstack.com | sh
+
+mountpoint -q /srv/salt || mount -B /opt/DevOps/salt /srv/salt
+mountpoint -q /srv/pillar || mount -B /opt/DevOps/pillar /srv/pillar
+
+rds_endpoint=$(aws rds describe-db-instances --db-instance-identifier DB-WordPress | grep "Address" | cut -d '"' -f 4)
+
+sed -i "s/rds_endpoint:/rds_endpoint: $rds_endpoint" /srv/pillar/worpress_rds.sls
+
+salt-call --local state.sls masterless.wordpress
