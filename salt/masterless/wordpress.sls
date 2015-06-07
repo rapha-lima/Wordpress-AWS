@@ -9,6 +9,7 @@ install_pkgs:
       - mariadb
       - php
       - php-gd
+      - php-mysql
 
 create-database:
   cmd.run:
@@ -50,12 +51,11 @@ grant-html-permissions:
 
 create-wp-config:
   file.managed:
-    - name: wp-config.php
+    - name: /var/www/html/wp-config.php
     - source: salt://masterless/files/wp-config.php
     - template: jinja
     - user: apache
     - group: apache
-    - cwd: /var/www/html
     - require:
       - cmd: cp-wordpress-content
 
