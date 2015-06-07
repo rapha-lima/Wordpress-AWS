@@ -8,16 +8,35 @@
                     "Version": "2012-10-17",
                     "Statement": [
                         {
-                            "Sid": "Stmt1433702475000",
                             "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
                             "Action": [
-                                "rds:DescribeDBInstances"
-                            ],
-                            "Resource": [
-                                "*"
+                                "sts:AssumeRole"
                             ]
                         }
                     ]
+                },
+                "Policies": {
+                    "PolicyName": "wordpress",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Sid": "Stmt1433702475000",
+                                "Effect": "Allow",
+                                "Action": [
+                                    "rds:DescribeDBInstances"
+                                ],
+                                "Resource": [
+                                    "*"
+                                ]
+                            }
+                        ]
+                    }
                 },
                 "Path": "/"
             }
@@ -308,7 +327,7 @@
                 "AvailabilityZone": "sa-east-1a",
                 "ImageId": "ami-bf9520a2",
                 "InstanceType": "t2.micro",
-                "KeyName": "master",
+                "KeyName": "wordpress",
                 "IamInstanceProfile": {
                     "Ref": "RoleInstance"
                 },
