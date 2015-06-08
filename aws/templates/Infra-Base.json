@@ -432,10 +432,6 @@
                         ]
                     }
                 },
-                "WaitHandle": {
-                    "Type": "AWS::CloudFormation::WaitConditionHandle",
-                    "Properties": {}
-                },
                 "IamInstanceProfile": {
                     "Ref": "RootInstanceProfile"
                 },
@@ -461,6 +457,10 @@
                     }
                 ]
             }
+        },
+        "WaitHandle": {
+            "Type": "AWS::CloudFormation::WaitConditionHandle",
+            "Properties": {}
         },
         "ELB": {
             "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
