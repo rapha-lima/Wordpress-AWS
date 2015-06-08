@@ -62,6 +62,10 @@ if ! salt-call --local state.sls masterless.wordpress; then
   exit 1
 fi
 
+instance-id=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+
+
+
 # Success
 echo "SUCCESS"
 send_signal 0

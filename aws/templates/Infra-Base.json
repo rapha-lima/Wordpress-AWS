@@ -22,7 +22,7 @@
                 },
                 "Policies": [
                     {
-                        "PolicyName": "wordpress",
+                        "PolicyName": "wordpress-rds",
                         "PolicyDocument": {
                             "Version": "2012-10-17",
                             "Statement": [
@@ -31,6 +31,24 @@
                                     "Effect": "Allow",
                                     "Action": [
                                         "rds:DescribeDBInstances"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "PolicyName": "wordpress-asg",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "Stmt1433736361000",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "autoscaling:AttachInstances"
                                     ],
                                     "Resource": [
                                         "*"
@@ -418,6 +436,20 @@
                                 "  exit 1\n",
                                 "fi\n",
                                 "\n",
+                                "instance-id=$(curl http://169.254.169.254/latest/meta-data/instance-id)\n",
+                                "echo \"aws autoscaling attach-instances --instance-ids $instance-id --auto-scaling-group-name\" > /tmp/attach\n",
+                                "chmod +x /tmp/attach\n",
+                                "at -f /tmp/attach now + 5 min\n",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "WordpressAutoScalingServerGroup"
+                                            }
+                                        ]
+                                    ]
+                                },
                                 "# Success\n",
                                 "echo \"SUCCESS\"\n",
                                 "send_signal 0\n",
@@ -510,6 +542,10 @@
                 "MaxSize": "5",
                 "Cooldown": "900",
                 "DesiredCapacity": "0",
+                "TerminationPolicies": [
+                    "OldestLaunchConfiguration",
+                    "ClosestToNextInstanceHour"
+                ],
                 "LoadBalancerNames": [
                     {
                         "Ref": "ELB"
@@ -612,7 +648,7 @@
                 "AutoScalingGroupName": {
                     "Ref": "WordpressAutoScalingServerGroup"
                 },
-                "Cooldown": "900",
+                "Cooldown": "1",
                 "ScalingAdjustment": "1"
             }
         },
@@ -623,18 +659,26 @@
                 "AutoScalingGroupName": {
                     "Ref": "WordpressAutoScalingServerGroup"
                 },
-                "Cooldown": "900",
+                "Cooldown": "1",
                 "ScalingAdjustment": "-1"
             }
         },
-        "LoadAverageUP": {
+        "CPUAlarmHigh": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "EvaluationPeriods": "1",
-                "Statistic": "Maximum",
-                "Threshold": "5",
-                "AlarmDescription": "Alarm if Load Average too high",
+                "Statistic": "Average",
+                "Threshold": "50",
+                "AlarmDescription": "Alarm if CPU too high",
                 "Period": "60",
+                "Dimensions": [
+                    {
+                        "Name": "WordpressAutoScalingServerGroup",
+                        "Value": {
+                            "Ref": "WordpressAutoScalingServerGroup"
+                        }
+                    }
+                ],
                 "AlarmActions": [
                     {
                         "Ref": "ScaleUpPolicy"
@@ -642,17 +686,25 @@
                 ],
                 "Namespace": "AWS/EC2",
                 "ComparisonOperator": "GreaterThanThreshold",
-                "MetricName": "LoadAverage"
+                "MetricName": "CPUUtilization"
             }
         },
-        "LoadAverageDown": {
+        "CPUAlarmLow": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "EvaluationPeriods": "1",
-                "Statistic": "Maximum",
-                "Threshold": "1",
-                "AlarmDescription": "Alarm if Load Average is less than 1",
+                "Statistic": "Average",
+                "Threshold": "10",
+                "AlarmDescription": "Alarm if CPU is less than 10",
                 "Period": "60",
+                "Dimensions": [
+                    {
+                        "Name": "WordpressAutoScalingServerGroup",
+                        "Value": {
+                            "Ref": "WordpressAutoScalingServerGroup"
+                        }
+                    }
+                ],
                 "AlarmActions": [
                     {
                         "Ref": "ScaleDownPolicy"
@@ -660,7 +712,7 @@
                 ],
                 "Namespace": "AWS/EC2",
                 "ComparisonOperator": "LessThanThreshold",
-                "MetricName": "LoadAverage"
+                "MetricName": "CPUUtilization"
             }
         }
     }
