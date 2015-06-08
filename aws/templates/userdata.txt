@@ -1,12 +1,44 @@
 #!/bin/bash
 
+# Signal aws cloud formation
+# TODO: this is aws specific now and should be somewhere else
+function send_signal {
+
+echo "SENDING $1"
+cfn-signal -e $1 \
+--stack \
+{{stack_name}}
+{{keep_line}}
+--resource \
+{{resource_logical_name}}
+{{keep_line}}
+--region \
+{{aws_region}}
+
+}
+
 type git || yum install -y git
 
 git clone https://github.com/rapha-lima/DevOps.git /opt/DevOps
 
 type salt-call || curl -sSL https://bootstrap.saltstack.com | sh
-type wget || yum install wget -y
 type unzip || yum install unzip -y
+
+# Install aws bootstrap
+echo "Installing wget"
+yum install wget -y
+
+echo "Fetching aws bootstrap"
+wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+
+echo "Unpackaging bootstrap"
+tar xfv aws-cfn-bootstrap-latest.tar.gz && rm -f aws-cfn-bootstrap-latest.tar.gz
+
+cd aws-cfn-bootstrap-*
+
+echo "Installing bootstrap"
+python setup.py install
+
 
 if ! type aws >> /dev/null ; then
   echo "There is no AWS Cli packaged installed. Let's install it."
@@ -24,4 +56,12 @@ rds_endpoint=$(aws rds describe-db-instances --db-instance-identifier DB-WordPre
 
 sed -i "s/rds_endpoint:/rds_endpoint: $rds_endpoint/" /srv/pillar/wordpress_rds.sls
 
-salt-call --local state.sls masterless.wordpress
+echo "Running salt-call state.sls basic_install"
+if ! salt-call --local state.sls masterless.wordpress; then
+  send_signal 1
+  exit 1
+fi
+
+# Success
+echo "SUCCESS"
+send_signal 0

@@ -318,7 +318,7 @@
                 "DBInstanceIdentifier": "DB-WordPress",
                 "AllocatedStorage": "5",
                 "DBInstanceClass": "db.t1.micro",
-                "StorageType" : "gp2",
+                "StorageType": "gp2",
                 "VPCSecurityGroups": [
                     {
                         "Ref": "RDSSecurityGroup"
@@ -337,11 +337,105 @@
         "WebInstance": {
             "Type": "AWS::EC2::Instance",
             "DependsOn": "RDSInstance",
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Timeout": "PT15M"
+                }
+            },
             "Properties": {
                 "AvailabilityZone": "sa-east-1a",
                 "ImageId": "ami-bf9520a2",
                 "InstanceType": "t2.micro",
                 "KeyName": "wordpress",
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash\n",
+                                "\n",
+                                "# Signal aws cloud formation\n",
+                                "# TODO: this is aws specific now and should be somewhere else\n",
+                                "function send_signal {\n",
+                                "\n",
+                                "echo \"SENDING $1\"\n",
+                                "cfn-signal -e $1 \\",
+                                "--stack \\",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " \\",
+                                "--resource \\n",
+                                "WebInstance\n",
+                                " \\",
+                                "--region \\n",
+                                "sa-east-1\n",
+                                "\n",
+                                "}\n",
+                                "\n",
+                                "type git || yum install -y git\n",
+                                "\n",
+                                "git clone https://github.com/rapha-lima/DevOps.git /opt/DevOps\n",
+                                "\n",
+                                "type salt-call || curl -sSL https://bootstrap.saltstack.com | sh\n",
+                                "type unzip || yum install unzip -y\n",
+                                "\n",
+                                "# Install aws bootstrap\n",
+                                "echo \"Installing wget\"\n",
+                                "yum install wget -y\n",
+                                "\n",
+                                "echo \"Fetching aws bootstrap\"\n",
+                                "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                                "\n",
+                                "echo \"Unpackaging bootstrap\"\n",
+                                "tar xfv aws-cfn-bootstrap-latest.tar.gz && rm -f aws-cfn-bootstrap-latest.tar.gz\n",
+                                "\n",
+                                "cd aws-cfn-bootstrap-*\n",
+                                "\n",
+                                "echo \"Installing bootstrap\"\n",
+                                "python setup.py install\n",
+                                "\n",
+                                "\n",
+                                "if ! type aws >> /dev/null ; then\n",
+                                "  echo \"There is no AWS Cli packaged installed. Let's install it.\"\n",
+                                "  wget --quiet https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -O /tmp/awscli-bundle.zip && unzip -qo /tmp/awscli-bundle.zip -d /tmp/ && /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/bin/aws\n",
+                                "fi\n",
+                                "\n",
+                                "for i in /srv/salt /srv/pillar; do\n",
+                                "  [[ -d $i ]] || mkdir -p $i\n",
+                                "done\n",
+                                "\n",
+                                "mountpoint -q /srv/salt || mount -B /opt/DevOps/salt /srv/salt\n",
+                                "mountpoint -q /srv/pillar || mount -B /opt/DevOps/pillar /srv/pillar\n",
+                                "\n",
+                                "rds_endpoint=$(aws rds describe-db-instances --db-instance-identifier DB-WordPress --region sa-east-1 | grep \"Address\" | cut -d '\"' -f 4)\n",
+                                "\n",
+                                "sed -i \"s/rds_endpoint:/rds_endpoint: $rds_endpoint/\" /srv/pillar/wordpress_rds.sls\n",
+                                "\n",
+                                "echo \"Running salt-call state.sls basic_install\"\n",
+                                "if ! salt-call --local state.sls masterless.wordpress; then\n",
+                                "  send_signal 1\n",
+                                "  exit 1\n",
+                                "fi\n",
+                                "\n",
+                                "# Success\n",
+                                "echo \"SUCCESS\"\n",
+                                "send_signal 0\n",
+                                "\n",
+                                "/bin/cfn-signal -e 0 -r complete -s true ",
+                                "\"",
+                                {
+                                    "Ref": "WaitHandle"
+                                },
+                                "\""
+                            ]
+                        ]
+                    }
+                },
+                "WaitHandle": {
+                    "Type": "AWS::CloudFormation::WaitConditionHandle",
+                    "Properties": {}
+                },
                 "IamInstanceProfile": {
                     "Ref": "RootInstanceProfile"
                 },
