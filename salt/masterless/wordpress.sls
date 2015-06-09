@@ -18,7 +18,7 @@ aws-cli:
     - name: wget --quiet https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -O /tmp/awscli-bundle.zip && unzip -qo /tmp/awscli-bundle.zip -d /tmp/ && /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/bin/aws
     - unless: stat /usr/bin/aws
     - require:
-      - pkg: install-pkgs
+      - pkg: install_pkgs
 
 setenforce 0:
   cmd.run:
