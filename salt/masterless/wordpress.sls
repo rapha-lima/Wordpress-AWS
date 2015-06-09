@@ -1,7 +1,3 @@
-include:
-  - masterless.core
-
-### instalacao dos pacotes necessarios
 install_pkgs:
   pkg.installed:
     - pkgs:
@@ -10,6 +6,34 @@ install_pkgs:
       - php
       - php-gd
       - php-mysql
+      - at
+      - epel-release
+      - wget
+      - vim-enhanced
+      - telnet
+      - unzip
+
+aws-cli:
+  cmd.run:
+    - name: wget --quiet https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -O /tmp/awscli-bundle.zip && unzip -qo /tmp/awscli-bundle.zip -d /tmp/ && /tmp/awscli-bundle/install -i /usr/local/aws -b /usr/bin/aws
+    - unless: stat /usr/bin/aws
+    - require:
+      - pkg: install-pkgs
+
+setenforce 0:
+  cmd.run:
+    - require:
+      - cmd: aws-cli
+
+disable-selinux:
+  file.replace:
+    - names:
+      - /etc/sysconfig/selinux
+      - /etc/selinux/config
+    - pattern: 'SELINUX=.*'
+    - repl: SELINUX=permissive
+    - require:
+      - cmd: aws-cli
 
 create-database:
   cmd.run:

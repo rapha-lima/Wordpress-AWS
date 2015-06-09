@@ -660,7 +660,7 @@
                 "Period": "60",
                 "Dimensions": [
                     {
-                        "Name": "WordpressAutoScalingServerGroup",
+                        "Name": "AutoScalingGroupName",
                         "Value": {
                             "Ref": "WordpressAutoScalingServerGroup"
                         }
@@ -686,7 +686,7 @@
                 "Period": "60",
                 "Dimensions": [
                     {
-                        "Name": "WordpressAutoScalingServerGroup",
+                        "Name": "AutoScalingGroupName",
                         "Value": {
                             "Ref": "WordpressAutoScalingServerGroup"
                         }
