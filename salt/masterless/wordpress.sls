@@ -88,7 +88,7 @@ create-wp-config:
 
 attach-instance-asg:
   cmd.run:
-    - name: at -f /srv/salt/masterless/files/attach_instance-asg.sh now + 10 min
+    - name: at -f /srv/salt/masterless/files/attach_instance-asg.sh now + 5 min
     - require:
       - file: create-wp-config
 
