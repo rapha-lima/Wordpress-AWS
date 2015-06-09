@@ -48,7 +48,8 @@
                                     "Sid": "Stmt1433736361000",
                                     "Effect": "Allow",
                                     "Action": [
-                                        "autoscaling:AttachInstances"
+                                        "autoscaling:AttachInstances",
+                                        "autoscaling:DescribeAutoScalingGroups"
                                     ],
                                     "Resource": [
                                         "*"
@@ -436,20 +437,6 @@
                                 "  exit 1\n",
                                 "fi\n",
                                 "\n",
-                                "instance-id=$(curl http://169.254.169.254/latest/meta-data/instance-id)\n",
-                                "echo \"aws autoscaling attach-instances --instance-ids $instance-id --auto-scaling-group-name\" > /tmp/attach\n",
-                                "chmod +x /tmp/attach\n",
-                                "at -f /tmp/attach now + 5 min\n",
-                                {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            {
-                                                "Ref": "WordpressAutoScalingServerGroup"
-                                            }
-                                        ]
-                                    ]
-                                },
                                 "# Success\n",
                                 "echo \"SUCCESS\"\n",
                                 "send_signal 0\n",

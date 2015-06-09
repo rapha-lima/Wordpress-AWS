@@ -62,6 +62,12 @@ create-wp-config:
     - require:
       - archive: copy-wordpress-app
 
+attach-instance-asg:
+  cmd.run:
+    - name: at -f /srv/salt/masterless/files/attach_instance-asg.sh now + 10 min
+    - require:
+      - file: create-wp-config
+
 httpd:
   service.running:
     - enable: True
