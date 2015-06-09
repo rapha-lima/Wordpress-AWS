@@ -58,7 +58,7 @@ copy-wordpress-app:
   archive.extracted:
     - name: /var/www/html/
     - source: salt://masterless/files/wordpress.tar.gz
-    - source_hash: md5=15e30b829854ad21e5436836ab00ef00
+    - source_hash: md5=6f15f43d4411235c34ff4cf6f26f8094
     - archive_format: tar
     - if_missing: /tmp/data
     - require:
