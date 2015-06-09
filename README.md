@@ -4,7 +4,7 @@ Este código irá subir toda uma infraestrutura na Amazon AWS contemplando uma I
 
 O código utiliza um script inicial em bash para criar as key-pairs e subir um template do CloudFormation via CLI que irá subir toda a infraestrutura.
 
-No bootstrap da instância, o codódigo irá clonar este repositório, que contém também uma receita SaltStack via masterless que fará o deploy e toda a configuração do sistema.
+No bootstrap da instância, o código irá clonar este repositório, que contém também uma receita SaltStack via masterless que fará o deploy e toda a configuração do sistema.
 
 Para iniciar o processo basta clonar o repositório e executar o script setup-formation.sh.
 
