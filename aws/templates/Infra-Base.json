@@ -530,8 +530,7 @@
                 "Cooldown": "900",
                 "DesiredCapacity": "0",
                 "TerminationPolicies": [
-                    "OldestLaunchConfiguration",
-                    "ClosestToNextInstanceHour"
+                    "OldestLaunchConfiguration"
                 ],
                 "LoadBalancerNames": [
                     {
