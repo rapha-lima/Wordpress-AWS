@@ -18,3 +18,25 @@ aws ec2 create-key-pair --key-name wordpress --region sa-east-1 --query 'KeyMate
 chmod 400 wordpress.pem
 
 aws cloudformation create-stack --stack-name Infra-base --template-body file://aws//templates//Infra-Base.json --region sa-east-1 --capabilities CAPABILITY_IAM
+
+echo "Creating Stack..."
+
+echo "This may take several minutes..."
+
+stackstatus=$(aws cloudformation list-stacks | grep -A 3 "Infra-base" | grep "CREATE_COMPLETE" | cut -d '"' -f 4)
+
+while [ $stackstatus != "CREATE_COMPLETE" ]; do
+
+if [ $stackstatus == "CREATE_COMPLETE" ]; then	
+
+instanceid=$(aws ec2 describe-instances | grep -B 100 -A 8 "WebServer-WordPress" | grep "InstanceId" | cut -d '"' -f 4)
+
+asg=$(aws autoscaling describe-auto-scaling-groups --region sa-east-1 | grep "AutoScalingGroupName" | grep Infra-base | cut -d '"' -f 4)
+
+aws autoscaling attach-instances --instance-ids $instanceid --auto-scaling-group-name $asg --region sa-east-1
+
+fi
+
+done
+
+echo "Stack COMPLETE"
