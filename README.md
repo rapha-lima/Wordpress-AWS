@@ -8,8 +8,8 @@ No bootstrap da instância, o código irá clonar este repositório, que contém
 
 Para iniciar o processo basta clonar o repositório e executar o script setup-formation.sh.
 
-$ git clone https://github.com/rapha-lima/DevOps.git ~/DevOps/
+$ git clone https://github.com/rapha-lima/Wordpress-AWS.git ~/Wordpress-AWS/
 
-$ cd ~/DevOps
+$ cd ~/Wordpress-AWS
 
 $ ./setup-formation.sh
