@@ -348,8 +348,8 @@
                 },
                 "Engine": "MySQL",
                 "EngineVersion": "5.5",
-                "MasterUsername": "wordpress",
-                "MasterUserPassword": "wordpress123",
+                "MasterUsername": "devops",
+                "MasterUserPassword": "devops123",
                 "MultiAZ": "true"
             }
         },

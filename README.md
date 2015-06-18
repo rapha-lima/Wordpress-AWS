@@ -1,4 +1,4 @@
-# DevOps
+# Wordpress-AWS
 
 Este código irá subir toda uma infraestrutura na Amazon AWS contemplando uma Instancia AMI Linux com RDS e ASG, e fará o deploy de uma aplicação em Wordpress na instancia criada.
 
